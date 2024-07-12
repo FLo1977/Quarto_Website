@@ -81,3 +81,47 @@ get_most_frequent(babynames, select_sex = "M") |>
 The name Lisa has been given the most frequently in the 60's (@fig-girls-most-frequent-names), whereas the names Jennifer was most frequently chosen in the 80's and Jessica in the 90's. We can not see any peak for the Susan name but this name is constantly used from 1950 to 2020.
 
 Regarding the boys names in the @fig-boys_most_frequent_names, the most used name is Matthew.
+
+Let's look at names from 2010!
+
+```{r}
+#| label: "fig-girls-2010-line"
+#| fig-cap: "Girl names from 2010" 
+#| fig-subcap:
+#|   - "The top 5 girl names"
+#|   - "The top 10 girl names" 
+#|   - "Heatmap of top 30 girl names"
+#| layout: [[50, 50], [100]]
+#| 
+# get most frequent girl names from 2010 onwards
+from_year <- 2010
+most_freq_girls <- get_most_frequent(babynames, select_sex = "F",
+                                     from = from_year)
+
+# plot top 5 girl names
+most_freq_girls |>
+  plot_top(top = 5)
+
+# plot top 10 girl names
+most_freq_girls |>
+  plot_top(top = 10)
+
+# get top 30 girl names in a matrix
+# with names in rows and years in columns
+prop_df <- babynames |> 
+  filter(name %in% most_freq_girls$most_frequent$name[1:30] & sex == "F") |>
+  filter(year >= from_year) |> 
+  select(year, name, prop) |>
+  pivot_wider(names_from = year,
+              values_from = prop)
+
+prop_mat <- as.matrix(prop_df[, 2:ncol(prop_df)])
+rownames(prop_mat) <- prop_df$name
+
+# create heatmap
+pheatmap(prop_mat, cluster_cols = FALSE, scale = "row")
+```
+
+In the @fig-girls-2010-line-1, we can follow the evolution of the top 5 girl names since 2010 especially the name of Sophia which seems to go down drastically but looking at the 10 top girl names in the @fig-girls-2010-line-2, this decrease is not so drastic anymore.
+
+The heatmap @fig-girls-2010-line-3 allows us to look at the top 30 girl names. We can observe two principal clusters. The first one corresponds to girl names frequently used in 2010 but not so used anymore in 2017 and for the second cluster it is the opposite.
