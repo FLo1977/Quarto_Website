@@ -1,0 +1,83 @@
+---
+title: "Baby names"
+---
+
+```{r}
+#| output: false
+
+library(babynames)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(pheatmap)
+```
+
+Let's look at the 10 first lines of the babynames dataframe to analyse the structure of this table and see which information we have:
+
+```{r}
+head(babynames) |> kable()
+```
+
+```{r}
+#| code-fold: true
+
+# Gets the most frequent babynames over a time-period.
+get_most_frequent <- function(babynames, select_sex, from = 1950) {
+  most_freq <- babynames |>
+    filter(sex == select_sex, year > from) |>
+    group_by(name) |>
+    summarise(average = mean(prop)) |>
+    arrange(desc(average))
+    
+  return(list(
+    babynames = babynames,
+    most_frequent = most_freq,
+    sex = select_sex,
+    from = from))
+}
+
+#Plot the top n most popular names.
+plot_top <- function(x, top = 10) {
+  topx <- x$most_frequent$name[1:top]
+  
+  p <- x$babynames |>
+    filter(name %in% topx, sex == x$sex, year > x$from) |>
+    ggplot(aes(x = year, y = prop, color = name)) +
+    geom_line() +
+    scale_color_brewer(palette = "Paired") +
+    theme_classic()
+  
+  return(p)
+}
+```
+
+## Babynames evolution
+
+### Girls
+
+Now, we will plot the proportions of the most frequent baby names of the girls from 1950 to 2020
+
+```{r}
+#| label: "fig-girls-most-frequent-names"
+#| fig-cap: "girl frequent names"
+#| fig-align: "left"
+#| 
+get_most_frequent(babynames, select_sex = "F") |>
+  plot_top()
+```
+
+### Boys 
+
+Here are the proportions of the most frequent baby names of the boys from 1950 to 2020
+
+```{r}
+#| label: "fig-boys_most_frequent_names"
+
+get_most_frequent(babynames, select_sex = "M") |>
+  plot_top()
+```
+
+The name Lisa has been given the most frequently in the 60's (@fig-girls-most-frequent-names), whereas the names Jennifer was most frequently chosen in the 80's and Jessica in the 90's. We can not see any peak for the Susan name but this name is constantly used from 1950 to 2020.
+
+Regarding the boys names in the @fig-boys_most_frequent_names, the most used name is Matthew.
